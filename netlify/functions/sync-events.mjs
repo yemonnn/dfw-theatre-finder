@@ -12,6 +12,10 @@ export default async (request) => {
     const html = await res.text();
 
     const $ = load(html);
+    
+return new Response(html.slice(0, 5000), {
+  headers: { "Content-Type": "text/plain" }
+});
 
     const events = [];
 
