@@ -1,63 +1,47 @@
 import { load } from "cheerio";
 
+export default async () => {
+  const url = "https://www.broadwayworld.com/dallas/regionalshows.cfm";
 
-export default async (request) => {
+  const res = await fetch(url, {
+    headers: { "User-Agent": "DFWTheatrePersonalUse/1.0" }
+  });
 
-  if (request.method !== "GET" && request.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
-  }
+  const html = await res.text();
 
-  try {
-    const res = await fetch("https://www.broadwayworld.com/dallas/regionalshows.cfm");
-    const html = await res.text();
+  // Quick diagnostics: are listings present in the raw HTML?
+  const checks = {
+    status: res.status,
+    length: html.length,
+    has_showid: html.includes("showid"),
+    has_regionalshows_link: html.includes("regionalshows.cfm?showid="),
+    has_ld_json: html.includes('application/ld+json'),
+    has_json_blob: html.includes("__NEXT_DATA__") || html.includes("window.__NUXT__") || html.includes("dataLayer")
+  };
 
-    const $ = load(html);
-    
-return new Response(html.slice(0, 5000), {
-  headers: { "Content-Type": "text/plain" }
-});
+  // Pull any show links if they exist
+  const showLinks = Array.from(
+    html.matchAll(/regionalshows\.cfm\?showid=\d+/g)
+  )
+    .slice(0, 25)
+    .map(m => m[0]);
 
-    const events = [];
+  // Pull any suspicious API-like URLs in scripts
+  const apiHints = Array.from(
+    html.matchAll(/https?:\/\/[^"' ]+(api|json|feed|rss)[^"' ]+/gi)
+  )
+    .slice(0, 25)
+    .map(m => m[0]);
 
-    $("a").each((_, el) => {
-      const link = $(el);
-      const title = link.text().trim();
-      if (!title || title.length < 4) return;
+  // Also try a basic cheerio scan for any anchors mentioning showid
+  const $ = load(html);
+  const cheerioLinks = $("a[href*='showid']")
+    .slice(0, 25)
+    .map((_, el) => $(el).attr("href"))
+    .get();
 
-      const context = link.closest("tr, li, div").text();
-      const match = context.match(/\((\d{1,2})\/(\d{1,2})\s*-\s*(\d{1,2})\/(\d{1,2})\)/);
-      if (!match) return;
-
-      const year = new Date().getFullYear();
-      const start = new Date(year, match[1] - 1, match[2]);
-      const end = new Date(year, match[3] - 1, match[4]);
-
-      events.push({
-        id: crypto.randomUUID(),
-        title,
-        venue: "",
-        city: "DFW",
-        startDate: start.toISOString().slice(0,10),
-        endDate: end.toISOString().slice(0,10),
-        times: [],
-        url: new URL(link.attr("href"), "https://www.broadwayworld.com").toString(),
-        source: "BroadwayWorld Dallas",
-        category: "Mixed"
-      });
-    });
-
-    return new Response(
-      JSON.stringify({
-        generatedAt: new Date().toISOString(),
-        events
-      }),
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err.message }),
-      { status: 500 }
-    );
-  }
+  return new Response(
+    JSON.stringify({ url, checks, showLinks, apiHints, cheerioLinks }, null, 2),
+    { headers: { "Content-Type": "application/json" } }
+  );
 };
