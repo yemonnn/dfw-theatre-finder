@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DFW Theatre Finder</title>
+
+    <!-- Clean readable font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+      :root{
+        --bg:#0b0f19;
+        --panel:#111827;
+        --panel2:#0f172a;
+        --text:#e5e7eb;
+        --muted:#9ca3af;
+        --border:#1f2937;
+        --shadow: 0 10px 30px rgba(0,0,0,.35);
+        --radius: 14px;
+      }
+      *{box-sizing:border-box}
+      body{
+        margin:0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1200px 700px at 20% -10%, #1f2a44 0%, transparent 55%),
+                    radial-gradient(900px 600px at 100% 0%, #1b2b3a 0%, transparent 50%),
+                    var(--bg);
+        color:var(--text);
+      }
+      a{color:inherit}
+      .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 48px}
+      header{
+        display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
+        margin-bottom:18px;
+      }
+      .titleBlock h1{margin:0;font-size:22px;letter-spacing:-.02em}
+      .titleBlock p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+      .pill{
+        display:inline-flex;align-items:center;gap:8px;
+        padding:8px 10px;border:1px solid var(--border);
+        border-radius:999px;background:rgba(17,24,39,.6);
+        color:var(--muted);font-size:12px;
+      }
+      .grid{
+        display:grid;grid-template-columns: 1.2fr .8fr;
+        gap:16px;
+      }
+      @media (max-width: 900px){ .grid{grid-template-columns:1fr} }
+      .panel{
+        background: linear-gradient(180deg, rgba(17,24,39,.9), rgba(15,23,42,.75));
+        border:1px solid rgba(31,41,55,.9);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow:hidden;
+      }
+      .panelHeader{
+        padding:14px 14px 10px;
+        border-bottom:1px solid rgba(31,41,55,.75);
+      }
+      .panelHeader h2{margin:0;font-size:14px;font-weight:600;letter-spacing:-.01em}
+      .panelBody{padding:14px}
+      label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+      input, select{
+        width:100%;
+        padding:10px 10px;
+        border-radius:12px;
+        border:1px solid rgba(31,41,55,.9);
+        background: rgba(11,18,32,.65);
+        color: var(--text);
+        outline:none;
+      }
+      input:focus, select:focus{border-color: rgba(147,197,253,.75); box-shadow: 0 0 0 3px rgba(147,197,253,.15);}
+      .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      @media (max-width: 520px){ .row{grid-template-columns:1fr} }
+      .stack{display:grid;gap:10px}
+      .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+      button{
+        border:1px solid rgba(31,41,55,.95);
+        background: rgba(17,24,39,.75);
+        color: var(--text);
+        padding:10px 12px;
+        border-radius:12px;
+        cursor:pointer;
+        font-weight:600;
+      }
+      button:hover{background: rgba(17,24,39,.95)}
+      button.secondary{color:var(--muted);font-weight:600}
+      .meta{
+        display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+        padding: 12px 14px;
+        border-bottom:1px solid rgba(31,41,55,.75);
+        background: rgba(17,24,39,.45);
+      }
+      .meta .left{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+      .count{color:var(--muted);font-size:12px}
+      .events{padding:14px;display:grid;gap:12px}
+      .card{
+        border:1px solid rgba(31,41,55,.9);
+        background: rgba(11,18,32,.55);
+        border-radius: 14px;
+        padding: 14px;
+      }
+      .cardTop{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+      .card h3{margin:0;font-size:15px;letter-spacing:-.01em}
+      .sub{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+      .chips{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{
+        font-size:12px;color:var(--muted);
+        padding:6px 8px;border-radius:999px;
+        border:1px solid rgba(31,41,55,.9);
+        background: rgba(17,24,39,.55);
+        white-space:nowrap;
+      }
+      .chip strong{color:var(--text);font-weight:600}
+      .empty{padding:22px;color:var(--muted);text-align:center}
+      .footerNote{margin-top:14px;color:var(--muted);font-size:12px;line-height:1.4}
+      .toast{
+        position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+        background: rgba(17,24,39,.95);
+        border:1px solid rgba(31,41,55,.95);
+        padding:10px 12px;border-radius:12px;
+        color: var(--muted);
+        display:none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="titleBlock">
+          <h1>DFW Theatre Finder</h1>
+          <p>Personal list view (filters + date range). Data will load once we add Netlify Functions.</p>
+        </div>
+        <div class="pill">
+          <span>Last refresh:</span>
+          <span id="lastRefresh">—</span>
+        </div>
+      </header>
+
+      <div class="grid">
+        <!-- Filters -->
+        <section class="panel">
+          <div class="panelHeader">
+            <h2>Filters</h2>
+          </div>
+          <div class="panelBody">
+            <div class="stack">
+              <div>
+                <label for="q">Search</label>
+                <input id="q" placeholder="Title, venue, city, source…" />
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="start">Start date</label>
+                  <input id="start" type="date" />
+                </div>
+                <div>
+                  <label for="end">End date</label>
+                  <input id="end" type="date" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="source">Source</label>
+                  <select id="source">
+                    <option value="">All sources</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="category">Category</label>
+                  <select id="category">
+                    <option value="">All categories</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="city">City</label>
+                  <select id="city">
+                    <option value="">All cities</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="sort">Sort</label>
+                  <select id="sort">
+                    <option value="soonest">Soonest first</option>
+                    <option value="latest">Latest first</option>
+                    <option value="title">Title (A–Z)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="btnRow">
+                <button id="apply">Apply</button>
+                <button id="reset" class="secondary" type="button">Reset</button>
+                <button id="refresh" class="secondary" type="button">Refresh data</button>
+              </div>
+
+              <div class="footerNote">
+                Date filtering uses <strong>overlap logic</strong> (a show that runs through your range still appears).
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results -->
+        <section class="panel">
+          <div class="meta">
+            <div class="left">
+              <div class="count"><span id="count">0</span> shows</div>
+              <div class="mutedSmall" id="status">Loading…</div>
+            </div>
+          </div>
+          <div id="list" class="events"></div>
+        </section>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
