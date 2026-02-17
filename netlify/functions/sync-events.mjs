@@ -1,4 +1,5 @@
-import cheerio from "cheerio";
+import { load } from "cheerio";
+
 
 export default async (request) => {
 
@@ -10,7 +11,8 @@ export default async (request) => {
     const res = await fetch("https://www.broadwayworld.com/dallas/regionalshows.cfm");
     const html = await res.text();
 
-    const $ = cheerio.load(html);
+    const $ = load(html);
+
     const events = [];
 
     $("a").each((_, el) => {
