@@ -28,18 +28,23 @@ function toast(msg) {
 
 function isoToPretty(iso) {
   if (!iso) return "TBA";
-  const d = new Date(iso + "T00:00:00");
+  const d = new Date(iso); // supports full ISO date-times
+  if (Number.isNaN(d.getTime())) return "TBA";
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
+
 
 function overlapInRange(eventStart, eventEnd, rangeStart, rangeEnd) {
   if (!eventStart) return true;
 
-  const s = new Date(eventStart + "T00:00:00").getTime();
-  const e = new Date((eventEnd || eventStart) + "T23:59:59").getTime();
+  // Event dates can be full ISO date-times
+  const s = new Date(eventStart).getTime();
+  const e = new Date(eventEnd || eventStart).getTime();
 
   const rs = rangeStart ? new Date(rangeStart + "T00:00:00").getTime() : null;
   const re = rangeEnd ? new Date(rangeEnd + "T23:59:59").getTime() : null;
+
+  if (Number.isNaN(s) || Number.isNaN(e)) return true;
 
   if (rs && e < rs) return false;
   if (re && s > re) return false;
