@@ -26,12 +26,21 @@ export default async () => {
     .slice(0, 25)
     .map(m => m[0]);
 
-  // Pull any suspicious API-like URLs in scripts
-  const apiHints = Array.from(
-    html.matchAll(/https?:\/\/[^"' ]+(api|json|feed|rss)[^"' ]+/gi)
+const apiHints = Array.from(
+  html.matchAll(/https?:\/\/[^"' ]+/gi)
+)
+  .map(m => m[0])
+  .filter(u =>
+    /feed|rss|json|api|regional|dallas|shows|calendar|events|graphql|wp-json/i.test(u)
   )
-    .slice(0, 25)
-    .map(m => m[0]);
+  .slice(0, 50);
+  
+const scriptSrcHints = $("script[src]")
+  .map((_, el) => $(el).attr("src"))
+  .get()
+  .filter(Boolean)
+  .slice(0, 30);
+
 
   // Also try a basic cheerio scan for any anchors mentioning showid
   const $ = load(html);
@@ -40,8 +49,9 @@ export default async () => {
     .map((_, el) => $(el).attr("href"))
     .get();
 
-  return new Response(
-    JSON.stringify({ url, checks, showLinks, apiHints, cheerioLinks }, null, 2),
+return new Response(
+  JSON.stringify({ url, checks, showLinks, apiHints, scriptSrcHints, cheerioLinks }, null, 2),
+
     { headers: { "Content-Type": "application/json" } }
   );
 };
