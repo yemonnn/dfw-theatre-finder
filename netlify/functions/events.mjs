@@ -107,6 +107,24 @@ export default async () => {
     }
   });
 
+  // Keep only DFW-ish results (you can add/remove cities anytime)
+const DFW_CITIES = new Set([
+  "Dallas", "Fort Worth", "Arlington", "Plano", "Irving", "Garland", "Frisco",
+  "McKinney", "Denton", "Richardson", "Lewisville", "Grapevine", "Allen",
+  "Carrollton", "Flower Mound", "Mesquite", "Euless", "Bedford", "Hurst",
+  "Southlake", "Coppell", "The Colony", "Rowlett", "Rockwall", "Cleburne"
+]);
+
+const filtered = events.filter(ev => {
+  if (!ev.city) return true; // keep unknown city for now (better than losing data)
+  return DFW_CITIES.has(ev.city);
+});
+
+// replace events array contents with filtered
+events.length = 0;
+events.push(...filtered);
+
+  
   // Sort by soonest first
   events.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
