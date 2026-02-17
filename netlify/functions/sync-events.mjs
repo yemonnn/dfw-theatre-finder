@@ -108,7 +108,8 @@ export default async (request) => {
   };
 
   const store = getStore("dfw-theatre");
-  await store.setJSON("events.json", payload);
+  await store.set("events.json", JSON.stringify(payload));
+
 
   return new Response(JSON.stringify({ ok: true, count: filtered.length }), {
     headers: { "Content-Type": "application/json" }
